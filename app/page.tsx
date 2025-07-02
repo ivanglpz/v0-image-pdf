@@ -29,11 +29,14 @@ import {
 import { useCallback, useState } from "react";
 
 interface ImageFile {
-  id: string;
-  file: File;
-  url: string;
-  name: string;
-  size: number;
+  image: {
+    id: string;
+    file: File;
+    url: string;
+    name: string;
+    size: number;
+  };
+  isChecked: boolean;
 }
 
 interface PdfSettings {
@@ -52,14 +55,14 @@ const formatSizes = {
 export default function ImageToPdfConverter() {
   const [images, setImages] = useState<ImageFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<ImageFile | null>(null);
+  const [selected, setSelected] = useState<ImageFile | null>(null);
   const [pdfSettings, setPdfSettings] = useState<PdfSettings>({
     orientation: "portrait",
     format: "letter",
     margin: 12,
   });
   const { toast } = useToast();
-  const [selectedForPdf, setSelectedForPdf] = useState<Set<string>>(new Set());
+  // const [selectedForPdf, setSelectedForPdf] = useState<Set<string>>(new Set());
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -93,19 +96,20 @@ export default function ImageToPdfConverter() {
     }
 
     const newImages: ImageFile[] = imageFiles.map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      file,
-      url: URL.createObjectURL(file),
-      name: file.name,
-      size: file.size,
+      image: {
+        id: Math.random().toString(36).substr(2, 9),
+        file,
+        url: URL.createObjectURL(file),
+        name: file.name,
+        size: file.size,
+      },
+      isChecked: true,
     }));
 
     setImages((prev) => [...prev, ...newImages]);
-    // Auto-seleccionar nuevas imágenes para PDF
-    const newImageIds = newImages.map((img) => img.id);
-    setSelectedForPdf((prev) => new Set([...prev, ...newImageIds]));
-    if (!selectedImage && newImages.length > 0) {
-      setSelectedImage(newImages[0]);
+
+    if (!selected && newImages.length > 0) {
+      setSelected(newImages[0]);
     }
 
     toast({
@@ -121,19 +125,7 @@ export default function ImageToPdfConverter() {
   };
 
   const removeImage = (id: string) => {
-    setImages((prev) => {
-      const filtered = prev.filter((img) => img.id !== id);
-      if (selectedImage?.id === id) {
-        setSelectedImage(filtered.length > 0 ? filtered[0] : null);
-      }
-      return filtered;
-    });
-    // Remover también de selectedForPdf
-    setSelectedForPdf((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(id);
-      return newSet;
-    });
+    setImages((prev) => prev?.filter((e) => e?.image?.id !== id));
   };
 
   const formatFileSize = (bytes: number) => {
@@ -205,7 +197,7 @@ export default function ImageToPdfConverter() {
           const y = margin + (availableHeight - imgHeight) / 2;
 
           pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
-          pdf.save(`${image.name.split(".")[0]}.pdf`);
+          pdf.save(`${image?.image.name.split(".")[0]}.pdf`);
 
           toast({
             title: "PDF generado",
@@ -219,7 +211,7 @@ export default function ImageToPdfConverter() {
           reject(new Error("Error al cargar la imagen"));
         };
 
-        img.src = image.url;
+        img.src = image?.image.url;
       });
     } catch (error) {
       toast({
@@ -249,19 +241,15 @@ export default function ImageToPdfConverter() {
   };
 
   const toggleImageForPdf = (imageId: string) => {
-    setSelectedForPdf((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(imageId)) {
-        newSet.delete(imageId);
-      } else {
-        newSet.add(imageId);
-      }
-      return newSet;
-    });
+    setImages((e) =>
+      e?.map((i) =>
+        i?.image?.id === imageId ? { ...i, isChecked: !i?.isChecked } : i
+      )
+    );
   };
 
   const generateMultiPagePDF = async () => {
-    const selectedImages = images.filter((img) => selectedForPdf.has(img.id));
+    const selectedImages = images.filter((e) => e?.isChecked === true);
 
     if (selectedImages.length === 0) {
       toast({
@@ -341,7 +329,7 @@ export default function ImageToPdfConverter() {
             reject(new Error("Error al cargar la imagen"));
           };
 
-          img.src = image.url;
+          img.src = image?.image.url;
         });
       }
 
@@ -435,73 +423,77 @@ export default function ImageToPdfConverter() {
                     <div className="p-2 bg-green-100 rounded-lg">
                       <FileImage className="w-5 h-5 text-green-600" />
                     </div>
-                    Imágenes Cargadas ({images.length}) - {selectedForPdf.size}{" "}
-                    seleccionadas para PDF
+                    Imágenes Cargadas ({images.length}) -{" "}
+                    {images.filter((e) => e?.isChecked)?.length} seleccionadas
+                    para PDF
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {images.map((image) => (
-                      <div
-                        key={image.id}
-                        className={`flex items-center gap-4 p-3 rounded-lg border transition-colors cursor-pointer ${
-                          selectedImage?.id === image.id
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                        onClick={() => setSelectedImage(image)}
-                      >
-                        <Checkbox
-                          checked={selectedForPdf.has(image.id)}
-                          onCheckedChange={() => toggleImageForPdf(image.id)}
-                          className="mr-2"
-                        />
-                        <img
-                          src={image.url || "/placeholder.svg"}
-                          alt={image.name}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">
-                            {image.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {formatFileSize(image.size)}
-                          </p>
+                    {images.map((e) => {
+                      const { image } = e;
+                      return (
+                        <div
+                          key={image.id}
+                          className={`flex items-center gap-4 p-3 rounded-lg border transition-colors cursor-pointer ${
+                            selected?.image?.id === image.id
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-gray-300"
+                          }`}
+                          onClick={() => setSelected(e)}
+                        >
+                          <Checkbox
+                            checked={e?.isChecked}
+                            onCheckedChange={() => toggleImageForPdf(image.id)}
+                            className="mr-2"
+                          />
+                          <img
+                            src={image.url || "/placeholder.svg"}
+                            alt={image.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 truncate">
+                              {image.name}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {formatFileSize(image.size)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              onClick={(element) => {
+                                element.stopPropagation();
+                                generatePDF(e);
+                              }}
+                            >
+                              <Download className="w-4 h-4 mr-1" />
+                              PDF
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeImage(image.id);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              generatePDF(image);
-                            }}
-                          >
-                            <Download className="w-4 h-4 mr-1" />
-                            PDF
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeImage(image.id);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
-                {selectedForPdf.size > 0 && (
+                {images.filter((e) => e?.isChecked)?.length > 0 && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-blue-900">
-                          {selectedForPdf.size} imagen(es) seleccionada(s) para
-                          PDF
+                          {images.filter((e) => e?.isChecked)?.length}{" "}
+                          imagen(es) seleccionada(s) para PDF
                         </p>
                         <p className="text-sm text-blue-700">
                           Todas las páginas usarán la misma configuración
@@ -618,7 +610,7 @@ export default function ImageToPdfConverter() {
             </Card>
 
             {/* Preview */}
-            {selectedImage && (
+            {selected && (
               <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-3 text-xl">
@@ -641,7 +633,7 @@ export default function ImageToPdfConverter() {
                         }}
                       >
                         <img
-                          src={selectedImage.url || "/placeholder.svg"}
+                          src={selected?.image.url || "/placeholder.svg"}
                           alt="Preview"
                           className="max-w-full max-h-full object-contain"
                         />
@@ -655,11 +647,11 @@ export default function ImageToPdfConverter() {
                       ></div>
                     </div>
                     <p className="text-sm text-gray-500 mt-2">
-                      {selectedImage.name}
+                      {selected?.image.name}
                     </p>
                     <Separator className="my-4" />
                     <Button
-                      onClick={() => generatePDF(selectedImage)}
+                      onClick={() => generatePDF(selected)}
                       className="w-full"
                     >
                       <Download className="w-4 h-4 mr-2" />
