@@ -62,7 +62,6 @@ export default function ImageToPdfConverter() {
     margin: 12,
   });
   const { toast } = useToast();
-  // const [selectedForPdf, setSelectedForPdf] = useState<Set<string>>(new Set());
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -423,9 +422,7 @@ export default function ImageToPdfConverter() {
                     <div className="p-2 bg-green-100 rounded-lg">
                       <FileImage className="w-5 h-5 text-green-600" />
                     </div>
-                    Imágenes Cargadas ({images.length}) -{" "}
-                    {images.filter((e) => e?.isChecked)?.length} seleccionadas
-                    para PDF
+                    Imágenes Cargadas ({images.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -435,30 +432,34 @@ export default function ImageToPdfConverter() {
                       return (
                         <div
                           key={image.id}
-                          className={`flex items-center gap-4 p-3 rounded-lg border transition-colors cursor-pointer ${
+                          className={`flex md:justify-between justify-end flex-wrap items-center gap-4 p-3 rounded-lg border transition-colors cursor-pointer ${
                             selected?.image?.id === image.id
                               ? "border-blue-500 bg-blue-50"
                               : "border-gray-200 hover:border-gray-300"
                           }`}
                           onClick={() => setSelected(e)}
                         >
-                          <Checkbox
-                            checked={e?.isChecked}
-                            onCheckedChange={() => toggleImageForPdf(image.id)}
-                            className="mr-2"
-                          />
-                          <img
-                            src={image.url || "/placeholder.svg"}
-                            alt={image.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
-                              {image.name}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {formatFileSize(image.size)}
-                            </p>
+                          <div className="flex-row flex gap-4 items-center w-full md:w-fit">
+                            <Checkbox
+                              checked={e?.isChecked}
+                              onCheckedChange={() =>
+                                toggleImageForPdf(image.id)
+                              }
+                              className="mr-2"
+                            />
+                            <img
+                              src={image.url || "/placeholder.svg"}
+                              alt={image.name}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-gray-900 truncate">
+                                {image.name}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {formatFileSize(image.size)}
+                              </p>
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <Button
@@ -489,7 +490,7 @@ export default function ImageToPdfConverter() {
                 </CardContent>
                 {images.filter((e) => e?.isChecked)?.length > 0 && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col items-start gap-4 justify-between sm:flex-row  md:flex-row">
                       <div>
                         <p className="font-medium text-blue-900">
                           {images.filter((e) => e?.isChecked)?.length}{" "}
@@ -501,7 +502,7 @@ export default function ImageToPdfConverter() {
                       </div>
                       <Button
                         onClick={generateMultiPagePDF}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 hover:bg-blue-700 w-full sm:w-fit"
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Generar PDF Completo
