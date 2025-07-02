@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import jsPDF from "jspdf"
+import { Slider } from "@/components/ui/slider"
 
 interface ImageFile {
   id: string
@@ -24,6 +25,7 @@ interface ImageFile {
 interface PdfSettings {
   orientation: "portrait" | "landscape"
   format: "letter" | "a4" | "legal" | "tabloid"
+  margin: number
 }
 
 const formatSizes = {
@@ -40,6 +42,7 @@ export default function ImageToPdfConverter() {
   const [pdfSettings, setPdfSettings] = useState<PdfSettings>({
     orientation: "portrait",
     format: "letter",
+    margin: 12,
   })
   const { toast } = useToast()
 
@@ -150,8 +153,9 @@ export default function ImageToPdfConverter() {
           const pageWidth = orientation === "portrait" ? dimensions.width : dimensions.height
           const pageHeight = orientation === "portrait" ? dimensions.height : dimensions.width
 
-          // Agregar márgenes de 12mm en todos los lados
-          const margin = 12
+          // Usar el margen configurado por el usuario
+          const margin = pdfSettings.margin
+
           const availableWidth = pageWidth - margin * 2
           const availableHeight = pageHeight - margin * 2
 
@@ -373,11 +377,31 @@ export default function ImageToPdfConverter() {
                   </Select>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div>
+                  <Label htmlFor="margin">Margen (mm)</Label>
+                  <div className="flex items-center space-x-2">
+                    <Slider
+                      value={[pdfSettings.margin]}
+                      onValueChange={(value) => setPdfSettings((prev) => ({ ...prev, margin: value[0] }))}
+                      max={30}
+                      min={0}
+                      step={1}
+                      className="flex-1"
+                    />
+                    <span className="text-sm text-gray-600 w-12 text-right">{pdfSettings.margin}mm</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Sin margen</span>
+                    <span>Máximo</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
                   <Badge variant="secondary">
                     {pdfSettings.orientation === "portrait" ? "Vertical" : "Horizontal"}
                   </Badge>
                   <Badge variant="outline">{pdfSettings.format.toUpperCase()}</Badge>
+                  <Badge variant="outline">{pdfSettings.margin}mm margen</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -397,15 +421,21 @@ export default function ImageToPdfConverter() {
                       className="inline-block border-2 border-gray-300 bg-white shadow-lg relative mx-auto"
                       style={getPreviewDimensions()}
                     >
-                      <div className="w-full h-full p-3 flex items-center justify-center">
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ padding: `${(pdfSettings.margin / 12) * 12}px` }}
+                      >
                         <img
                           src={selectedImage.url || "/placeholder.svg"}
                           alt="Preview"
                           className="max-w-full max-h-full object-contain"
                         />
                       </div>
-                      {/* Indicador visual de márgenes */}
-                      <div className="absolute inset-0 border border-dashed border-gray-400 pointer-events-none m-3"></div>
+                      {/* Indicador visual de márgenes dinámico */}
+                      <div
+                        className="absolute inset-0 border border-dashed border-gray-400 pointer-events-none"
+                        style={{ margin: `${(pdfSettings.margin / 12) * 12}px` }}
+                      ></div>
                     </div>
                     <p className="text-sm text-gray-500 mt-2">{selectedImage.name}</p>
                     <Separator className="my-4" />
