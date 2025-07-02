@@ -1,31 +1,44 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useCallback } from "react"
-import { Upload, Download, FileImage, Settings, Eye, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { useToast } from "@/hooks/use-toast"
-import jsPDF from "jspdf"
-import { Slider } from "@/components/ui/slider"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+import {
+  Download,
+  Eye,
+  FileImage,
+  Settings,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import { useCallback, useState } from "react";
 
 interface ImageFile {
-  id: string
-  file: File
-  url: string
-  name: string
-  size: number
+  id: string;
+  file: File;
+  url: string;
+  name: string;
+  size: number;
 }
 
 interface PdfSettings {
-  orientation: "portrait" | "landscape"
-  format: "letter" | "a4" | "legal" | "tabloid"
-  margin: number
+  orientation: "portrait" | "landscape";
+  format: "letter" | "a4" | "legal" | "tabloid";
+  margin: number;
 }
 
 const formatSizes = {
@@ -33,48 +46,48 @@ const formatSizes = {
   a4: { width: 210, height: 297 },
   legal: { width: 216, height: 356 },
   tabloid: { width: 279, height: 432 },
-}
+};
 
 export default function ImageToPdfConverter() {
-  const [images, setImages] = useState<ImageFile[]>([])
-  const [dragActive, setDragActive] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<ImageFile | null>(null)
+  const [images, setImages] = useState<ImageFile[]>([]);
+  const [dragActive, setDragActive] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<ImageFile | null>(null);
   const [pdfSettings, setPdfSettings] = useState<PdfSettings>({
     orientation: "portrait",
     format: "letter",
     margin: 12,
-  })
-  const { toast } = useToast()
+  });
+  const { toast } = useToast();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }, [])
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
-    const files = Array.from(e.dataTransfer.files)
-    handleFiles(files)
-  }, [])
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+  }, []);
 
   const handleFiles = (files: File[]) => {
-    const imageFiles = files.filter((file) => file.type.startsWith("image/"))
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
     if (imageFiles.length === 0) {
       toast({
         title: "Error",
         description: "Por favor selecciona solo archivos de imagen",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     const newImages: ImageFile[] = imageFiles.map((file) => ({
@@ -83,149 +96,157 @@ export default function ImageToPdfConverter() {
       url: URL.createObjectURL(file),
       name: file.name,
       size: file.size,
-    }))
+    }));
 
-    setImages((prev) => [...prev, ...newImages])
+    setImages((prev) => [...prev, ...newImages]);
     if (!selectedImage && newImages.length > 0) {
-      setSelectedImage(newImages[0])
+      setSelectedImage(newImages[0]);
     }
 
     toast({
       title: "Imágenes cargadas",
       description: `${newImages.length} imagen(es) agregada(s) exitosamente`,
-    })
-  }
+    });
+  };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      handleFiles(Array.from(e.target.files))
+      handleFiles(Array.from(e.target.files));
     }
-  }
+  };
 
   const removeImage = (id: string) => {
     setImages((prev) => {
-      const filtered = prev.filter((img) => img.id !== id)
+      const filtered = prev.filter((img) => img.id !== id);
       if (selectedImage?.id === id) {
-        setSelectedImage(filtered.length > 0 ? filtered[0] : null)
+        setSelectedImage(filtered.length > 0 ? filtered[0] : null);
       }
-      return filtered
-    })
-  }
+      return filtered;
+    });
+  };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (
+      Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+    );
+  };
 
   const generatePDF = async (image: ImageFile) => {
     try {
-      const { orientation, format } = pdfSettings
-      const dimensions = formatSizes[format]
+      const { orientation, format } = pdfSettings;
+      const dimensions = formatSizes[format];
 
       const pdf = new jsPDF({
         orientation,
         unit: "mm",
         format: [dimensions.width, dimensions.height],
-      })
+      });
 
-      const img = new Image()
-      img.crossOrigin = "anonymous"
+      const img = new Image();
+      img.crossOrigin = "anonymous";
 
       return new Promise<void>((resolve, reject) => {
         img.onload = () => {
-          const canvas = document.createElement("canvas")
-          const ctx = canvas.getContext("2d")
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
 
           if (!ctx) {
-            reject(new Error("No se pudo crear el contexto del canvas"))
-            return
+            reject(new Error("No se pudo crear el contexto del canvas"));
+            return;
           }
 
-          canvas.width = img.width
-          canvas.height = img.height
-          ctx.drawImage(img, 0, 0)
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
 
-          const imgData = canvas.toDataURL("image/jpeg", 0.95)
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
-          const pageWidth = orientation === "portrait" ? dimensions.width : dimensions.height
-          const pageHeight = orientation === "portrait" ? dimensions.height : dimensions.width
+          const pageWidth =
+            orientation === "portrait" ? dimensions.width : dimensions.height;
+          const pageHeight =
+            orientation === "portrait" ? dimensions.height : dimensions.width;
 
           // Usar el margen configurado por el usuario
-          const margin = pdfSettings.margin
+          const margin = pdfSettings.margin;
 
-          const availableWidth = pageWidth - margin * 2
-          const availableHeight = pageHeight - margin * 2
+          const availableWidth = pageWidth - margin * 2;
+          const availableHeight = pageHeight - margin * 2;
 
-          const imgAspectRatio = img.width / img.height
-          const availableAspectRatio = availableWidth / availableHeight
+          const imgAspectRatio = img.width / img.height;
+          const availableAspectRatio = availableWidth / availableHeight;
 
-          let imgWidth, imgHeight
+          let imgWidth, imgHeight;
 
           if (imgAspectRatio > availableAspectRatio) {
-            imgWidth = availableWidth
-            imgHeight = availableWidth / imgAspectRatio
+            imgWidth = availableWidth;
+            imgHeight = availableWidth / imgAspectRatio;
           } else {
-            imgHeight = availableHeight
-            imgWidth = availableHeight * imgAspectRatio
+            imgHeight = availableHeight;
+            imgWidth = availableHeight * imgAspectRatio;
           }
 
           // Centrar la imagen dentro del área disponible (con márgenes)
-          const x = margin + (availableWidth - imgWidth) / 2
-          const y = margin + (availableHeight - imgHeight) / 2
+          const x = margin + (availableWidth - imgWidth) / 2;
+          const y = margin + (availableHeight - imgHeight) / 2;
 
-          pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight)
-          pdf.save(`${image.name.split(".")[0]}.pdf`)
+          pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
+          pdf.save(`${image.name.split(".")[0]}.pdf`);
 
           toast({
             title: "PDF generado",
             description: "El archivo PDF se ha descargado exitosamente",
-          })
+          });
 
-          resolve()
-        }
+          resolve();
+        };
 
         img.onerror = () => {
-          reject(new Error("Error al cargar la imagen"))
-        }
+          reject(new Error("Error al cargar la imagen"));
+        };
 
-        img.src = image.url
-      })
+        img.src = image.url;
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "No se pudo generar el PDF",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const getPreviewDimensions = () => {
-    const { orientation, format } = pdfSettings
-    const dimensions = formatSizes[format]
-    const baseWidth = 200
+    const { orientation, format } = pdfSettings;
+    const dimensions = formatSizes[format];
+    const baseWidth = 200;
 
     if (orientation === "portrait") {
       return {
         width: baseWidth,
         height: (baseWidth * dimensions.height) / dimensions.width,
-      }
+      };
     } else {
       return {
         width: baseWidth,
         height: (baseWidth * dimensions.width) / dimensions.height,
-      }
+      };
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Conversor de Imagen a PDF</h1>
-          <p className="text-gray-600 text-lg">Sube tus imágenes y conviértelas en PDFs profesionales</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Conversor de Imagen a PDF
+          </h1>
+          <p className="text-gray-600 text-lg">
+            Sube tus imágenes y conviértelas en PDFs profesionales
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -241,7 +262,9 @@ export default function ImageToPdfConverter() {
               <CardContent>
                 <div
                   className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"
+                    dragActive
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-300 hover:border-gray-400"
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
@@ -249,8 +272,12 @@ export default function ImageToPdfConverter() {
                   onDrop={handleDrop}
                 >
                   <FileImage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg font-medium text-gray-700 mb-2">Arrastra y suelta tus imágenes aquí</p>
-                  <p className="text-gray-500 mb-4">o haz clic para seleccionar archivos</p>
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    Arrastra y suelta tus imágenes aquí
+                  </p>
+                  <p className="text-gray-500 mb-4">
+                    o haz clic para seleccionar archivos
+                  </p>
                   <input
                     type="file"
                     multiple
@@ -295,15 +322,19 @@ export default function ImageToPdfConverter() {
                           className="w-12 h-12 object-cover rounded"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">{image.name}</p>
-                          <p className="text-sm text-gray-500">{formatFileSize(image.size)}</p>
+                          <p className="font-medium text-gray-900 truncate">
+                            {image.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {formatFileSize(image.size)}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
                             size="sm"
                             onClick={(e) => {
-                              e.stopPropagation()
-                              generatePDF(image)
+                              e.stopPropagation();
+                              generatePDF(image);
                             }}
                           >
                             <Download className="w-4 h-4 mr-1" />
@@ -313,8 +344,8 @@ export default function ImageToPdfConverter() {
                             size="sm"
                             variant="outline"
                             onClick={(e) => {
-                              e.stopPropagation()
-                              removeImage(image.id)
+                              e.stopPropagation();
+                              removeImage(image.id);
                             }}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -344,7 +375,10 @@ export default function ImageToPdfConverter() {
                   <Select
                     value={pdfSettings.orientation}
                     onValueChange={(value: "portrait" | "landscape") =>
-                      setPdfSettings((prev) => ({ ...prev, orientation: value }))
+                      setPdfSettings((prev) => ({
+                        ...prev,
+                        orientation: value,
+                      }))
                     }
                   >
                     <SelectTrigger>
@@ -361,9 +395,9 @@ export default function ImageToPdfConverter() {
                   <Label htmlFor="format">Tamaño de Papel</Label>
                   <Select
                     value={pdfSettings.format}
-                    onValueChange={(value: "letter" | "a4" | "legal" | "tabloid") =>
-                      setPdfSettings((prev) => ({ ...prev, format: value }))
-                    }
+                    onValueChange={(
+                      value: "letter" | "a4" | "legal" | "tabloid"
+                    ) => setPdfSettings((prev) => ({ ...prev, format: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -372,7 +406,9 @@ export default function ImageToPdfConverter() {
                       <SelectItem value="letter">Carta (8.5" × 11")</SelectItem>
                       <SelectItem value="a4">A4 (210 × 297 mm)</SelectItem>
                       <SelectItem value="legal">Legal (8.5" × 14")</SelectItem>
-                      <SelectItem value="tabloid">Tabloid (11" × 17")</SelectItem>
+                      <SelectItem value="tabloid">
+                        Tabloid (11" × 17")
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -382,13 +418,20 @@ export default function ImageToPdfConverter() {
                   <div className="flex items-center space-x-2">
                     <Slider
                       value={[pdfSettings.margin]}
-                      onValueChange={(value) => setPdfSettings((prev) => ({ ...prev, margin: value[0] }))}
+                      onValueChange={(value) =>
+                        setPdfSettings((prev) => ({
+                          ...prev,
+                          margin: value[0],
+                        }))
+                      }
                       max={30}
                       min={0}
                       step={1}
                       className="flex-1"
                     />
-                    <span className="text-sm text-gray-600 w-12 text-right">{pdfSettings.margin}mm</span>
+                    <span className="text-sm text-gray-600 w-12 text-right">
+                      {pdfSettings.margin}mm
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Sin margen</span>
@@ -398,9 +441,13 @@ export default function ImageToPdfConverter() {
 
                 <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
                   <Badge variant="secondary">
-                    {pdfSettings.orientation === "portrait" ? "Vertical" : "Horizontal"}
+                    {pdfSettings.orientation === "portrait"
+                      ? "Vertical"
+                      : "Horizontal"}
                   </Badge>
-                  <Badge variant="outline">{pdfSettings.format.toUpperCase()}</Badge>
+                  <Badge variant="outline">
+                    {pdfSettings.format.toUpperCase()}
+                  </Badge>
                   <Badge variant="outline">{pdfSettings.margin}mm margen</Badge>
                 </div>
               </CardContent>
@@ -423,7 +470,9 @@ export default function ImageToPdfConverter() {
                     >
                       <div
                         className="w-full h-full flex items-center justify-center"
-                        style={{ padding: `${(pdfSettings.margin / 12) * 12}px` }}
+                        style={{
+                          padding: `${(pdfSettings.margin / 12) * 12}px`,
+                        }}
                       >
                         <img
                           src={selectedImage.url || "/placeholder.svg"}
@@ -434,12 +483,19 @@ export default function ImageToPdfConverter() {
                       {/* Indicador visual de márgenes dinámico */}
                       <div
                         className="absolute inset-0 border border-dashed border-gray-400 pointer-events-none"
-                        style={{ margin: `${(pdfSettings.margin / 12) * 12}px` }}
+                        style={{
+                          margin: `${(pdfSettings.margin / 12) * 12}px`,
+                        }}
                       ></div>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">{selectedImage.name}</p>
+                    <p className="text-sm text-gray-500 mt-2 break-all text-wrap">
+                      {selectedImage.name}
+                    </p>
                     <Separator className="my-4" />
-                    <Button onClick={() => generatePDF(selectedImage)} className="w-full">
+                    <Button
+                      onClick={() => generatePDF(selectedImage)}
+                      className="w-full"
+                    >
                       <Download className="w-4 h-4 mr-2" />
                       Descargar PDF
                     </Button>
@@ -451,5 +507,5 @@ export default function ImageToPdfConverter() {
         </div>
       </div>
     </div>
-  )
+  );
 }
