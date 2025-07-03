@@ -27,7 +27,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useCallback, useState } from "react";
-
+import { v4 as uuidv4 } from "uuid";
 interface ImageFile {
   image: {
     id: string;
@@ -196,7 +196,9 @@ export default function ImageToPdfConverter() {
           const y = margin + (availableHeight - imgHeight) / 2;
 
           pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
-          pdf.save(`${image?.image.name.split(".")[0]}.pdf`);
+          pdf.save(
+            `${image?.image.name.split(".")[0]}-${uuidv4()?.slice(0, 4)}.pdf`
+          );
 
           toast({
             title: "PDF generado",
@@ -332,7 +334,7 @@ export default function ImageToPdfConverter() {
         });
       }
 
-      pdf.save(`imagenes-convertidas-${Date.now()}.pdf`);
+      pdf.save(`imgs-pdf-${uuidv4()?.slice(0, 4)}.pdf`);
 
       toast({
         title: "PDF generado",
