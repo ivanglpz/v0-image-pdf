@@ -2,6 +2,7 @@
 
 import type React from "react";
 
+import SeoComponent from "@/components/seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -351,6 +352,13 @@ export default function ImageToPdfConverter() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
+      <SeoComponent
+        title="imgs-pdf - Convert images to PDF easily"
+        description="A simple and fast way to turn your photos or images into printable PDF documents."
+        image="/cover.png"
+        content="image to pdf, convert image pdf, imgs-pdf, image converter, online pdf, photo to pdf"
+      />
+
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         {/* <div className="text-center mb-12 py-8">
