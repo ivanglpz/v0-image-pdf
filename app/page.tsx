@@ -351,7 +351,7 @@ export default function ImageToPdfConverter() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="text-center mb-12 py-8">
+        {/* <div className="text-center mb-12 py-8">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent mb-4 leading-tight">
               Conversor de Imagen a PDF
@@ -364,9 +364,9 @@ export default function ImageToPdfConverter() {
               <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           {/* Upload Area */}
           <div className="lg:col-span-2 space-y-8">
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
@@ -454,7 +454,7 @@ export default function ImageToPdfConverter() {
                             />
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-gray-900 truncate">
-                                {image.name}
+                                {image.name?.slice(0, 35)}
                               </p>
                               <p className="text-sm text-gray-500">
                                 {formatFileSize(image.size)}
@@ -648,7 +648,7 @@ export default function ImageToPdfConverter() {
                       ></div>
                     </div>
                     <p className="text-sm text-gray-500 mt-2">
-                      {selected?.image.name}
+                      {selected?.image.name?.slice(0, 35)}
                     </p>
                     <Separator className="my-4" />
                     <Button
