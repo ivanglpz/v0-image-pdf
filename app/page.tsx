@@ -89,7 +89,7 @@ export default function ImageToPdfConverter() {
     if (imageFiles.length === 0) {
       toast({
         title: "Error",
-        description: "Por favor selecciona solo archivos de imagen",
+        description: "Please select image files only",
         variant: "destructive",
       });
       return;
@@ -113,8 +113,8 @@ export default function ImageToPdfConverter() {
     }
 
     toast({
-      title: "Imágenes cargadas",
-      description: `${newImages.length} imagen(es) agregada(s) exitosamente`,
+      title: "Images uploaded",
+      description: `${newImages.length} image(s) added successfully`,
     });
   };
 
@@ -158,7 +158,7 @@ export default function ImageToPdfConverter() {
           const ctx = canvas.getContext("2d");
 
           if (!ctx) {
-            reject(new Error("No se pudo crear el contexto del canvas"));
+            reject(new Error("Unable to create canvas context"));
             return;
           }
 
@@ -173,7 +173,6 @@ export default function ImageToPdfConverter() {
           const pageHeight =
             orientation === "portrait" ? dimensions.height : dimensions.width;
 
-          // Usar el margen configurado por el usuario
           const margin = pdfSettings.margin;
 
           const availableWidth = pageWidth - margin * 2;
@@ -192,7 +191,6 @@ export default function ImageToPdfConverter() {
             imgWidth = availableHeight * imgAspectRatio;
           }
 
-          // Centrar la imagen dentro del área disponible (con márgenes)
           const x = margin + (availableWidth - imgWidth) / 2;
           const y = margin + (availableHeight - imgHeight) / 2;
 
@@ -202,15 +200,15 @@ export default function ImageToPdfConverter() {
           );
 
           toast({
-            title: "PDF generado",
-            description: "El archivo PDF se ha descargado exitosamente",
+            title: "PDF generated",
+            description: "The PDF file has been downloaded successfully",
           });
 
           resolve();
         };
 
         img.onerror = () => {
-          reject(new Error("Error al cargar la imagen"));
+          reject(new Error("Error loading image"));
         };
 
         img.src = image?.image.url;
@@ -218,7 +216,7 @@ export default function ImageToPdfConverter() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudo generar el PDF",
+        description: "Failed to generate PDF",
         variant: "destructive",
       });
     }
@@ -256,7 +254,7 @@ export default function ImageToPdfConverter() {
     if (selectedImages.length === 0) {
       toast({
         title: "Error",
-        description: "Selecciona al menos una imagen para incluir en el PDF",
+        description: "Select at least one image to include in the PDF",
         variant: "destructive",
       });
       return;
@@ -288,7 +286,7 @@ export default function ImageToPdfConverter() {
             const ctx = canvas.getContext("2d");
 
             if (!ctx) {
-              reject(new Error("No se pudo crear el contexto del canvas"));
+              reject(new Error("Unable to create canvas context"));
               return;
             }
 
@@ -328,7 +326,7 @@ export default function ImageToPdfConverter() {
           };
 
           img.onerror = () => {
-            reject(new Error("Error al cargar la imagen"));
+            reject(new Error("Error loading image"));
           };
 
           img.src = image?.image.url;
@@ -338,13 +336,13 @@ export default function ImageToPdfConverter() {
       pdf.save(`imgs-pdf-${uuidv4()?.slice(0, 4)}.pdf`);
 
       toast({
-        title: "PDF generado",
-        description: `PDF con ${selectedImages.length} imagen(es) descargado exitosamente`,
+        title: "PDF generated",
+        description: `PDF with ${selectedImages.length} image(s) downloaded successfully`,
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudo generar el PDF",
+        description: "Failed to generate PDF",
         variant: "destructive",
       });
     }
@@ -360,22 +358,6 @@ export default function ImageToPdfConverter() {
       />
 
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        {/* <div className="text-center mb-12 py-8">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent mb-4 leading-tight">
-              Conversor de Imagen a PDF
-            </h1>
-            <p className="text-xl text-gray-600 leading-relaxed font-medium">
-              Transforma tus imágenes en documentos PDF profesionales con
-              control total sobre formato y diseño
-            </p>
-            <div className="mt-6 flex justify-center">
-              <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
-            </div>
-          </div>
-        </div> */}
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           {/* Upload Area */}
           <div className="lg:col-span-2 space-y-8">
@@ -385,7 +367,7 @@ export default function ImageToPdfConverter() {
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <Upload className="w-5 h-5 text-blue-600" />
                   </div>
-                  Subir Imágenes
+                  Upload Images
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -402,11 +384,9 @@ export default function ImageToPdfConverter() {
                 >
                   <FileImage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-lg font-medium text-gray-700 mb-2">
-                    Arrastra y suelta tus imágenes aquí
+                    Drag and drop your images here
                   </p>
-                  <p className="text-gray-500 mb-4">
-                    o haz clic para seleccionar archivos
-                  </p>
+                  <p className="text-gray-500 mb-4">or click to select files</p>
                   <input
                     type="file"
                     multiple
@@ -417,7 +397,7 @@ export default function ImageToPdfConverter() {
                   />
                   <Button asChild>
                     <label htmlFor="file-input" className="cursor-pointer">
-                      Seleccionar Imágenes
+                      Select Images
                     </label>
                   </Button>
                 </div>
@@ -432,7 +412,7 @@ export default function ImageToPdfConverter() {
                     <div className="p-2 bg-green-100 rounded-lg">
                       <FileImage className="w-5 h-5 text-green-600" />
                     </div>
-                    Imágenes Cargadas ({images.length})
+                    Uploaded Images ({images.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -503,11 +483,11 @@ export default function ImageToPdfConverter() {
                     <div className="flex flex-col items-start gap-4 justify-between sm:flex-row  md:flex-row">
                       <div>
                         <p className="font-medium text-blue-900">
-                          {images.filter((e) => e?.isChecked)?.length}{" "}
-                          imagen(es) seleccionada(s) para PDF
+                          {images.filter((e) => e?.isChecked)?.length} image(s)
+                          selected for PDF
                         </p>
                         <p className="text-sm text-blue-700">
-                          Todas las páginas usarán la misma configuración
+                          All pages will use the same configuration
                         </p>
                       </div>
                       <Button
@@ -515,7 +495,7 @@ export default function ImageToPdfConverter() {
                         className="bg-blue-600 hover:bg-blue-700 w-full sm:w-fit"
                       >
                         <Download className="w-4 h-4 mr-2" />
-                        Generar PDF Completo
+                        Generate Full PDF
                       </Button>
                     </div>
                   </div>
@@ -533,12 +513,12 @@ export default function ImageToPdfConverter() {
                   <div className="p-2 bg-purple-100 rounded-lg">
                     <Settings className="w-5 h-5 text-purple-600" />
                   </div>
-                  Configuración PDF
+                  PDF Settings
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label htmlFor="orientation">Orientación</Label>
+                  <Label htmlFor="orientation">Orientation</Label>
                   <Select
                     value={pdfSettings.orientation}
                     onValueChange={(value: "portrait" | "landscape") =>
@@ -552,14 +532,14 @@ export default function ImageToPdfConverter() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="portrait">Vertical</SelectItem>
-                      <SelectItem value="landscape">Horizontal</SelectItem>
+                      <SelectItem value="portrait">Portrait</SelectItem>
+                      <SelectItem value="landscape">Landscape</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="format">Tamaño de Papel</Label>
+                  <Label htmlFor="format">Paper Size</Label>
                   <Select
                     value={pdfSettings.format}
                     onValueChange={(
@@ -570,7 +550,9 @@ export default function ImageToPdfConverter() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="letter">Carta (8.5" × 11")</SelectItem>
+                      <SelectItem value="letter">
+                        Letter (8.5" × 11")
+                      </SelectItem>
                       <SelectItem value="a4">A4 (210 × 297 mm)</SelectItem>
                       <SelectItem value="legal">Legal (8.5" × 14")</SelectItem>
                       <SelectItem value="tabloid">
@@ -581,7 +563,7 @@ export default function ImageToPdfConverter() {
                 </div>
 
                 <div>
-                  <Label htmlFor="margin">Margen (mm)</Label>
+                  <Label htmlFor="margin">Margin (mm)</Label>
                   <div className="flex items-center space-x-2">
                     <Slider
                       value={[pdfSettings.margin]}
@@ -601,21 +583,21 @@ export default function ImageToPdfConverter() {
                     </span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Sin margen</span>
-                    <span>Máximo</span>
+                    <span>No margin</span>
+                    <span>Maximum</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
                   <Badge variant="secondary">
                     {pdfSettings.orientation === "portrait"
-                      ? "Vertical"
-                      : "Horizontal"}
+                      ? "Portrait"
+                      : "Landscape"}
                   </Badge>
                   <Badge variant="outline">
                     {pdfSettings.format.toUpperCase()}
                   </Badge>
-                  <Badge variant="outline">{pdfSettings.margin}mm margen</Badge>
+                  <Badge variant="outline">{pdfSettings.margin}mm margin</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -628,7 +610,7 @@ export default function ImageToPdfConverter() {
                     <div className="p-2 bg-orange-100 rounded-lg">
                       <Eye className="w-5 h-5 text-orange-600" />
                     </div>
-                    Vista Previa
+                    Preview
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -649,7 +631,6 @@ export default function ImageToPdfConverter() {
                           className="max-w-full max-h-full object-contain"
                         />
                       </div>
-                      {/* Indicador visual de márgenes dinámico */}
                       <div
                         className="absolute inset-0 border border-dashed border-gray-400 pointer-events-none"
                         style={{
@@ -666,7 +647,7 @@ export default function ImageToPdfConverter() {
                       className="w-full"
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Descargar PDF
+                      Download PDF
                     </Button>
                   </div>
                 </CardContent>
